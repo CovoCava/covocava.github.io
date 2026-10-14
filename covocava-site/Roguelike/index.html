@@ -13,7 +13,7 @@
             font-family: 'Merriweather', serif; 
         }
 
-        /* 1. The main container - Widened to 85vw to allow more horizontal cards */
+        /* Main Container */
         #overlay-container { 
             display: flex; 
             flex-direction: row; 
@@ -31,7 +31,7 @@
 
         .show { opacity: 1 !important; }
 
-        /* 2. The Card Base */
+        /* Card Base */
         .decree-card { 
             position: relative; 
             display: flex; 
@@ -39,7 +39,7 @@
             align-items: center; 
         }
 
-        /* 3. The Numbers (RED) */
+        /* Numbering */
         .decree-number { 
             position: absolute; 
             top: -8%; 
@@ -50,7 +50,7 @@
             z-index: 30;
         }
 
-        /* 4. The Metal Frame */
+        /* Framing */
         .header-frame { 
             position: absolute; 
             top: 12%; 
@@ -61,7 +61,7 @@
             z-index: 10;
         }
 
-        /* 5. The Perk Icon */
+        /* Icons */
         .icon-container { 
             position: absolute; 
             top: 32%;    
@@ -79,7 +79,7 @@
             object-fit: contain; 
         }
 
-        /* 6. The Text Area */
+        /* Text */
         .decree-title-container { 
             position: absolute; 
             top: 63%;    
@@ -132,17 +132,17 @@
                     if (data.action === "ShowRolls" || data.action === "ShowBuild") {
                         container.innerHTML = ''; 
 
-                        // DYNAMIC SIZING ENGINE (More aggressive shrinking for 1080p limits)
+                        // Dynamic Sizing
                         let cardWidth = 380; 
                         let cardHeight = 700;
 
-                        // 4 to 8 perks: Shrink to fit 2 comfortable rows
+                        // 4-8 Perks
                         if (optionsArray.length > 3) { cardWidth = 240; cardHeight = 440; }
                         
-                        // 9 to 14 perks: Shrink to fit 3 comfortable rows
+                        // 9-14 Perks
                         if (optionsArray.length > 8) { cardWidth = 170; cardHeight = 310; }
                         
-                        // 15+ perks: Shrink to fit 4+ rows
+                        // 15+ Perks
                         if (optionsArray.length > 14) { cardWidth = 120; cardHeight = 220; }
 
                         let dynamicBaseFont = cardHeight * 0.05; 
