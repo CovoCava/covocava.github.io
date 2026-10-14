@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Elite Spacing Decree Overlay</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&display=swap');
+
+        body { 
+            margin: 0; padding: 0; 
+            background: transparent; 
+            overflow: hidden; 
+            font-family: 'Merriweather', serif; 
+        }
+
+        /* 1. The main container - Widened to 85vw to allow more horizontal cards */
+        #overlay-container { 
+            display: flex; 
+            flex-direction: row; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            align-content: center; 
+            align-items: center; 
+            width: 65vw;      
+            margin: 0 auto;   
+            height: 100vh; 
+            gap: 20px; 
+            opacity: 0; 
+            transition: opacity 0.8s; 
+        }
+
+        .show { opacity: 1 !important; }
+
+        /* 2. The Card Base */
+        .decree-card { 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        /* 3. The Numbers (RED) */
+        .decree-number { 
+            position: absolute; 
+            top: -8%; 
+            font-size: 4em; 
+            font-weight: 900;
+            color: #FF0000; 
+            text-shadow: 0 0 15px rgba(255, 0, 0, 0.5), 4px 4px 10px #000; 
+            z-index: 30;
+        }
+
+        /* 4. The Metal Frame */
+        .header-frame { 
+            position: absolute; 
+            top: 12%; 
+            width: 145%; 
+            height: 85%; 
+            background: url('icons/header_frame.png') no-repeat center;
+            background-size: contain; 
+            z-index: 10;
+        }
+
+        /* 5. The Perk Icon */
+        .icon-container { 
+            position: absolute; 
+            top: 32%;    
+            width: 65%;  
+            height: 32%; 
+            z-index: 20; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+        }
+
+        .decree-icon { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
+        }
+
+        /* 6. The Text Area */
+        .decree-title-container { 
+            position: absolute; 
+            top: 63%;    
+            width: 82%;  
+            height: 18%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 30;
+        }
+
+        .decree-title { 
+            font-weight: 700; 
+            color: white; 
+            text-align: center; 
+            text-transform: uppercase; 
+            text-shadow: 2px 2px 8px #000; 
+            line-height: 1.1;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div id="overlay-container"></div>
+    <script>
+        const container = document.getElementById('overlay-container');
+        let lastTimestamp = 0;
+
+        function fitText(el, containerHeight, startingSize) {
+            if (!el) return;
+            let fontSize = startingSize;
+            el.style.fontSize = fontSize + 'px';
+            while (el.scrollHeight > containerHeight && fontSize > 10) {
+                fontSize -= 1;
+                el.style.fontSize = fontSize + 'px';
+            }
+        }
+
+        setInterval(async () => {
+            try {
+                const response = await fetch('data.json?t=' + Date.now());
+                const data = await response.json();
+
+                if (data.timestamp > lastTimestamp) {
+                    lastTimestamp = data.timestamp;
+                    
+                    const optionsArray = data.options || data.build || [];
+                    const isRoll = data.action === "ShowRolls";
+
+                    if (data.action === "ShowRolls" || data.action === "ShowBuild") {
+                        container.innerHTML = ''; 
+
+                        // DYNAMIC SIZING ENGINE (More aggressive shrinking for 1080p limits)
+                        let cardWidth = 380; 
+                        let cardHeight = 700;
+
+                        // 4 to 8 perks: Shrink to fit 2 comfortable rows
+                        if (optionsArray.length > 3) { cardWidth = 240; cardHeight = 440; }
+                        
+                        // 9 to 14 perks: Shrink to fit 3 comfortable rows
+                        if (optionsArray.length > 8) { cardWidth = 170; cardHeight = 310; }
+                        
+                        // 15+ perks: Shrink to fit 4+ rows
+                        if (optionsArray.length > 14) { cardWidth = 120; cardHeight = 220; }
+
+                        let dynamicBaseFont = cardHeight * 0.05; 
+
+                        optionsArray.forEach((option, index) => {
+                            const imageName = option.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() + '.webp'; 
+                            container.innerHTML += `
+                                <div class="decree-card" style="width: ${cardWidth}px; height: ${cardHeight}px;">
+                                    ${isRoll ? `<div class="decree-number">[${index + 1}]</div>` : ''}
+                                    <div class="header-frame"></div>
+                                    <div class="icon-container">
+                                        <img class="decree-icon" src="icons/${imageName}" onerror="this.src='icons/default.webp'">
+                                    </div>
+                                    <div class="decree-title-container">
+                                        <div class="decree-title" id="title-${index}">${option}</div>
+                                    </div>
+                                </div>`;
+                        });
+
+                        container.classList.add('show');
+
+                        setTimeout(() => {
+                            optionsArray.forEach((_, index) => {
+                                const titleEl = document.getElementById(`title-${index}`);
+                                if (titleEl) {
+                                    const containerEl = titleEl.parentElement;
+                                    fitText(titleEl, containerEl.offsetHeight, dynamicBaseFont);
+                                }
+                            });
+                        }, 100);
+                    }
+                    
+                    if (data.action === "Hide") {
+                        container.classList.remove('show');
+                    }
+                }
+            } catch (error) { }
+        }, 500); 
+    </script>
+</body>
+</html>
